@@ -6,6 +6,9 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX
 import com.ctre.phoenix.motorcontrol.ControlMode
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
+import edu.wpi.first.wpilibj2.command.CommandScheduler
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup
+import frc.robot.commands.DriveCommand
 import frc.robot.subsystems.DriveSystem
 
 /**
@@ -22,14 +25,21 @@ import frc.robot.subsystems.DriveSystem
  * teaching purposes.**
  */
 object Robot : TimedRobot() {
-    private val joystick = Joystick(0)
+    private val teleopCommands = ParallelCommandGroup(DriveCommand)
+
+    override fun teleopInit() =
+        CommandScheduler.getInstance().schedule(teleopCommands)
+
+    override fun teleopExit() =
+        CommandScheduler.getInstance().cancel(teleopCommands)
 
 
-    override fun autonomousInit() {
+    override fun robotPeriodic() {
+        SmartDashboard.putNumber("theta", Controller.theta)
+        SmartDashboard.putNumber("v", Controller.v)
+        SmartDashboard.putNumber("h", Controller.h)
+        SmartDashboard.putNumber("z", Controller.z)
 
-    }
-
-    override fun autonomousPeriodic() {
-        DriveSystem.setTheta(DriveSystem.Motor.FRONTRIGHT, TalonFXControlMode.Position, 180.0)
+        CommandScheduler.getInstance().run()
     }
 }
