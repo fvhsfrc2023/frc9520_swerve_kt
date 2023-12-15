@@ -25,7 +25,7 @@ object Controller {
     val v
         get() =
             if (abs(m_Joystick.y) > ControllerConst.Y_DEAD_ZONE)
-                smooth(ControllerConst.Y_DEAD_ZONE, abs(m_Joystick.y)) * sign(m_Joystick.y)
+                smooth(ControllerConst.Y_DEAD_ZONE, abs(m_Joystick.y)) * sign(m_Joystick.y) * -1
             else 0.0
 
     val h
@@ -40,15 +40,18 @@ object Controller {
                 smooth(ControllerConst.Z_DEAD_ZONE, abs(m_Joystick.z)) * sign(m_Joystick.z)
             else 0.0
 
-    // range: [0, 360)
-    val theta
-        get() =
-            (when {
-                h > 0 -> -atan(v / h) + PI / 2
-                h < 0 -> atan(v / h) + PI / 2
-                else -> if (v > 0.0) { 0.0 } else { PI }
-            }) / PI * 180 + 180
+    /**
+     * range: [0, 2Pi]
+     */
+    val theta: Double
+        get() = when {
+//                h.pow(2) + v.pow(2) < ControllerConst.R_DEAD_ZONE.pow(2) -> PI / 2
+                h > 0.0 -> atan(v / h)
+                h < 0.0 -> PI + atan(v / h)
+                else -> if (v >= 0) PI / 2 else 3 * PI / 2
+            } + PI / 2
 
-    val radius
-        get() = sqrt(v*v + h*h)
+    val radius get() = sqrt(v*v + h*h)
+
+    val buttonX get() = m_Joystick.getRawButton(2)
 }
